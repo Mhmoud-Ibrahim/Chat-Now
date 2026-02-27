@@ -12,6 +12,9 @@
   "engines": {
      "node": "22.21.1"
   },
+  "overrides": {
+  "react-side-effect": "2.1.2"
+},
   "dependencies": {
     "@fortawesome/fontawesome-free": "^7.2.0",
     "@types/aos": "^3.0.7",
