@@ -99,7 +99,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
         if (!myIdFromCookie) return;
 
-        const newSocket = io("http://localhost:3000", {
+        const newSocket = io("https://m2dd-chatserver.hf.space", {
             withCredentials: true,
             transports: ['websocket'],
             auth: { userId: myIdFromCookie }
