@@ -35,9 +35,9 @@ export default function Login() {
       const data = response.data;
       if (data.message === 'success') {
         console.log(data.user);
-        console.log(data.user._id);
+        console.log(data.user.id);
         updateUserData(data.user);
-        setUser(data.user._id);
+        setUser(data.user.id);
         // window.location.href = "/home"
         localStorage.setItem('userId', data.user._id);
       }
