@@ -20,7 +20,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
    const socketContext = useContext(SocketContext);
  if (!socketContext) return null;
-   const {updateUserData,setUser}=socketContext
+   const {updateUserData}=socketContext
 
   let navigate = useNavigate()
 
