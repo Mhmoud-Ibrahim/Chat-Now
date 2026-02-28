@@ -6,7 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import api from "./api";
 import { SocketContext } from "./SocketContext";
 
-// import { Helmet } from "react-helmet";
+
 
 interface LoginValues {
   email: string;
@@ -34,7 +34,7 @@ export default function Login() {
     if (response && response.data) {
       const data = response.data;
       if (data.message === 'success') {
-        console.log(data.user)
+        console.log(data.user, "data.user");
         updateUserData(data.user);
         navigate('/home');
         localStorage.setItem('username', data.user.name);
@@ -59,10 +59,7 @@ export default function Login() {
 
   return <>
 
-    {/* <Helmet>
-      <meta charSet="utf-8" />
-      <title>Sign up</title>
-    </Helmet> */}
+   
     <form onSubmit={formik.handleSubmit} className="mt-5 d-flex flex-column "  >
       <div className="container login col-md-4 mt-5 br-second">
         <div className="  text-center m-auto mt-5">
