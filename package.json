@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "engines": {
-     "node": "22.21.1"
+     "node": "24.x"
   },
   "overrides": {
   "react-side-effect": "2.1.2"
