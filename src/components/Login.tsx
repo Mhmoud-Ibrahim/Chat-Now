@@ -2,7 +2,7 @@
 import { useFormik } from "formik"
 import {  useContext, useState } from 'react'
 import *as Yup from 'yup';
-import { useNavigate } from 'react-router-dom';
+//import { useNavigate } from 'react-router-dom';
 import api from "./api";
 import { SocketContext } from "./SocketContext";
 
@@ -22,7 +22,7 @@ export default function Login() {
  if (!socketContext) return null;
    const {updateUserData,setUser}=socketContext
 
-  let navigate = useNavigate()
+  // let navigate = useNavigate()
 
   async function signin(values: LoginValues) {
     const response = await api.post('/auth/signin', values).catch(err => {
@@ -37,7 +37,7 @@ export default function Login() {
         console.log(data.user, "data.user");
         updateUserData(data.user);
         setUser(data.user._id);
-        navigate('/home');
+       window.location.href = "/home"
         localStorage.setItem('username', data.user.name);
       }}}
   let validationSchema = Yup.object({
