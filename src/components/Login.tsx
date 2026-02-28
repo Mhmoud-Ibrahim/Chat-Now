@@ -39,7 +39,7 @@ export default function Login() {
         updateUserData(data.user);
         setUser(data.user.id);
         // window.location.href = "/home"
-        localStorage.setItem('userId', data.user._id);
+        localStorage.setItem('userId', data.user.id);
       }
     }
   }
