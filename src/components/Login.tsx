@@ -1,6 +1,6 @@
 
 import { useFormik } from "formik"
-import {  useContext, useState } from 'react'
+import { useContext, useState } from 'react'
 import *as Yup from 'yup';
 //import { useNavigate } from 'react-router-dom';
 import api from "./api";
@@ -18,9 +18,9 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
   const [showPassword, setShowPassword] = useState(false);
-   const socketContext = useContext(SocketContext);
- if (!socketContext) return null;
-   const {updateUserData,setUser}=socketContext
+  const socketContext = useContext(SocketContext);
+  if (!socketContext) return null;
+  const { updateUserData, setUser } = socketContext
 
   // let navigate = useNavigate()
 
@@ -28,7 +28,7 @@ export default function Login() {
     const response = await api.post('/auth/signin', values).catch(err => {
       setLoading(false);
       setErrorMsg(err.response?.data?.message || "there is an error");
-      return null; 
+      return null;
     });
 
     if (response && response.data) {
@@ -37,9 +37,11 @@ export default function Login() {
         console.log(data.user, "data.user");
         updateUserData(data.user);
         setUser(data.user._id);
-       window.location.href = "/home"
-        localStorage.setItem('username', data.user.name);
-      }}}
+        window.location.href = "/home"
+        localStorage.setItem('userId', data.user._id);
+      }
+    }
+  }
   let validationSchema = Yup.object({
     email: Yup.string().required('email is required').email().matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, 'email invalid EX: nnn50@gamil.com'),
     password: Yup.string().required('password is required').matches(/^[a-zA-Z0-9]{1,10}$/, 'EX:aA1234')
@@ -50,7 +52,7 @@ export default function Login() {
       email: '',
       password: '',
     }, validationSchema,
-     onSubmit: signin
+    onSubmit: signin
   })
   const togglePassword = () => {
     setShowPassword(!showPassword);
@@ -59,13 +61,13 @@ export default function Login() {
 
   return <>
 
-   
+
     <form onSubmit={formik.handleSubmit} className="mt-5 d-flex flex-column "  >
       <div className="container login col-md-4 mt-5 br-second">
         <div className="  text-center m-auto mt-5">
           <h3 className="text-white" >Login now</h3>
         </div>
-                {errorMsg ? <div className='alert alert-danger mt-2'>{errorMsg}</div> : null}
+        {errorMsg ? <div className='alert alert-danger mt-2'>{errorMsg}</div> : null}
 
         <label htmlFor="email" >Email:</label>
         <input value={formik.values.email} onChange={formik.handleChange} onBlur={formik.handleBlur} type="email" id="email" name="email" className="form-control mb-2 " />
