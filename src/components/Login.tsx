@@ -20,7 +20,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
    const socketContext = useContext(SocketContext);
  if (!socketContext) return null;
-   const {updateUserData}=socketContext
+   const {updateUserData,setUser}=socketContext
 
   let navigate = useNavigate()
 
@@ -36,6 +36,7 @@ export default function Login() {
       if (data.message === 'success') {
         console.log(data.user)
         updateUserData(data.user);
+        setUser(data.user);
         navigate('/home');
         localStorage.setItem('username', data.user.name);
       }}}
