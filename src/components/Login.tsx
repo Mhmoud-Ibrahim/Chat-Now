@@ -20,7 +20,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
    const socketContext = useContext(SocketContext);
  if (!socketContext) return null;
-   const {updateUserData}=socketContext
+   const {updateUserData,setUser}=socketContext
 
   let navigate = useNavigate()
 
@@ -36,13 +36,13 @@ export default function Login() {
       if (data.message === 'success') {
         console.log(data.user, "data.user");
         updateUserData(data.user);
+        setUser(data.user._id);
         navigate('/home');
         localStorage.setItem('username', data.user.name);
       }}}
   let validationSchema = Yup.object({
     email: Yup.string().required('email is required').email().matches(/^[A-Z0-9._%+-]+@[A-Z0-9.-]+\.[A-Z]{2,}$/i, 'email invalid EX: nnn50@gamil.com'),
     password: Yup.string().required('password is required').matches(/^[a-zA-Z0-9]{1,10}$/, 'EX:aA1234')
-
   })
 
   let formik = useFormik({

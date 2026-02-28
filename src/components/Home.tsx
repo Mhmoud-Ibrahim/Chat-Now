@@ -29,11 +29,8 @@ export function Home() {
   const targetId = String(selectedUser || "").replace(/['"]+/g, '');
   const selectedUserData = onlineUsers.find(u => String(u.userId).replace(/['"]+/g, '') === targetId);
 
-
-  // --- طلب تاريخ المحادثة فور اختيار المستخدم ---
 useEffect(() => {
   if (selectedUser && socket) {
-    // إرسال طلب للسيرفر لجلب الرسائل القديمة لهذا المستخدم تحديداً
     socket.emit("get_chat_history", { receiverId: selectedUser });
   }
 }, [selectedUser, socket]); // سيعمل الكود كلما تغير الشخص المختار

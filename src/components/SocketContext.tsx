@@ -94,15 +94,23 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const clearNotification = useCallback(() => setNotification(null), []);
 
     useEffect(() => {
-        const myIdFromCookie = getCookie("userId") || "";
-        setUserId(myIdFromCookie);
 
-        if (!myIdFromCookie) return;
+           // حاول جلب الـ ID من الكوكي أو من LocalStorage كخيار بديل أضمن
+    const id = getCookie("userId") || localStorage.getItem("userId") || "";
+    
+    if (!id) {
+        console.log("No user ID found, socket will not connect.");
+        return;
+    }
+     //   const myIdFromCookie = getCookie("userId") || "";
+        setUserId(id);
+
+       // if (!myIdFromCookie) return;
 
         const newSocket = io("https://m2dd-chatserver.hf.space", {
             withCredentials: true,
             transports: ['websocket'],
-            auth: { userId: myIdFromCookie }
+           auth: { userId: id }
         });
 
         newSocket.on("connect", () => {
@@ -129,7 +137,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         newSocket.on("private_reply", (data: MsgData) => {
             setMessages((prev) => [...prev, data]);
             const incomingSenderId = String(data.senderId).replace(/['"]+/g, '');
-            const currentUserId = String(myIdFromCookie).replace(/['"]+/g, '');
+            const currentUserId = String(id).replace(/['"]+/g, '');
 
             if (incomingSenderId !== currentUserId) {
                 setOnlineUsers((currentList) => {
@@ -212,8 +220,8 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         <SocketContext.Provider value={{
             socket, isConnected, messages, clearNotification, sendPrivateMsg, notification,
             userId, sendMsg: (msg) => socket?.emit("chatMsg", msg), setSelectedUser, updateUserData,
-            selectedUser, onlineUsers, logout, userName, setUsername,
-            deleteMsg, deleteSenderMessages, getMyProfile: async () => { await api.get('/auth/getMe') }, user, setUser
+            selectedUser, onlineUsers, logout, userName, setUsername,setUser,
+            deleteMsg, deleteSenderMessages, getMyProfile: async () => { await api.get('/auth/getMe') }, user
         }}>
             {children}
         </SocketContext.Provider>
