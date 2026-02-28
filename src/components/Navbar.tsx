@@ -47,14 +47,10 @@ function Navbar() {
           <li 
             className="nav-item list-unstyled mx-1">
             <Link className="nav-link active text-white   rounded-2 p-1 " aria-current="page"
-              to="users">User
+              to="users">Users
             </Link>
           </li>
-            <li
-              className="nav-item list-unstyled">
-              <Link className="nav-link text-white   rounded-2 p-1 " to="chat">chat
-              </Link>
-            </li>
+           
 
           {socket?.connected ? null
           : <>
