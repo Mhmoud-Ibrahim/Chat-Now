@@ -34,10 +34,10 @@ export default function Login() {
     if (response && response.data) {
       const data = response.data;
       if (data.message === 'success') {
-        console.log(data.user, "data.user");
+        console.log(data.user);
+        console.log(data.user._id);
         updateUserData(data.user);
         setUser(data.user._id);
-        console.log(data.user._id);
         // window.location.href = "/home"
         localStorage.setItem('userId', data.user._id);
       }
