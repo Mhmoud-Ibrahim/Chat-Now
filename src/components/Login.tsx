@@ -37,7 +37,8 @@ export default function Login() {
         console.log(data.user, "data.user");
         updateUserData(data.user);
         setUser(data.user._id);
-        window.location.href = "/home"
+        console.log(data.user._id);
+        // window.location.href = "/home"
         localStorage.setItem('userId', data.user._id);
       }
     }
