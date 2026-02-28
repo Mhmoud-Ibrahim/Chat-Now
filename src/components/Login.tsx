@@ -37,7 +37,6 @@ export default function Login() {
         console.log(data.user)
         updateUserData(data.user);
         navigate('/home');
-        window.location.reload();
         localStorage.setItem('username', data.user.name);
       }}}
   let validationSchema = Yup.object({
