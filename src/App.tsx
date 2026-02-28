@@ -19,9 +19,9 @@ function App() {
     {
       path: '', element: <Layout />, children: [
         { index: true, element: <Home/> },
-        { path: 'home', element:<Home/>},
         { path: 'register', element: <Register /> },
         { path: 'login', element: <Login /> },
+        { path: 'home', element:<ProtectedRoute><Home/></ProtectedRoute>},
         { path: 'users', element:<ProtectedRoute><Users/></ProtectedRoute>},
         { path: 'profile', element: <ProtectedRoute><Profile /></ProtectedRoute> },
         { path: '*', element: <NotFound /> }

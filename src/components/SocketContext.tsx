@@ -183,9 +183,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     })
   );
 });
-useEffect(() => {
-    setUserId(localStorage.getItem("userId") || "");
-})
+
 
 
         setSocket(newSocket);
