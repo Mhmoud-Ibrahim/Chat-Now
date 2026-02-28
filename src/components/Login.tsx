@@ -36,7 +36,6 @@ export default function Login() {
       if (data.message === 'success') {
         console.log(data.user)
         updateUserData(data.user);
-        setUser(data.user);
         navigate('/home');
         localStorage.setItem('username', data.user.name);
       }}}
