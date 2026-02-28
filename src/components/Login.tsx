@@ -40,6 +40,7 @@ export default function Login() {
         setUser(data.user.id);
         // window.location.href = "/home"
         localStorage.setItem('userId', data.user.id);
+       
       }
     }
   }

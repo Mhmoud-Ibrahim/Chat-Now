@@ -103,6 +103,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         return;
     }
         const myIdFromCookie = getCookie("userId") || localStorage.getItem("userId") || "";
+       const token = getCookie("token") || localStorage.getItem("token") || "";
         setUserId(myIdFromCookie);
 
         if (!myIdFromCookie) return;
@@ -110,7 +111,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         const newSocket = io("https://m2dd-chatserver.hf.space", {
             withCredentials: true,
             transports: ['websocket'],
-            auth: { userId: myIdFromCookie ||localStorage.getItem("userId") },
+            auth: { userId: myIdFromCookie ||localStorage.getItem("userId"),token:token|| localStorage.getItem("token") },
         });
 
         newSocket.on("connect", () => {
