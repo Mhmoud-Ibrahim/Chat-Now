@@ -34,12 +34,9 @@ export default function Login() {
     if (response && response.data) {
       const data = response.data;
       if (data.message === 'success') {
-        console.log(data.user);
-        console.log(data.user.id);
-        updateUserData(data.user);
-        setUser(data.user.id);
+        console.log(data);
+        setUser(data.user);
         // window.location.href = "/home"
-        localStorage.setItem('userId', data.user.id);
        
       }
     }

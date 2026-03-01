@@ -1,6 +1,7 @@
 import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import { io, Socket } from "socket.io-client";
 import api from "./api";
+import Loading from "./Loading";
 
 // --- دالة مساعدة لجلب الكوكي ---
 const getCookie = (name: string) => {
@@ -71,8 +72,9 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
     const [notification, setNotification] = useState<{ msg: string, senderName: string, senderId: string } | null>(null);
+  const [loading, setLoading] = useState(true);
 
-    const updateUserData = useCallback((newData: Partial<UserData>) => {
+const updateUserData = useCallback((newData: Partial<UserData>) => {
         setUser((prev) => {
             if (!prev) return newData as UserData;
             return { ...prev, ...newData };
@@ -92,26 +94,38 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     }, [socket, selectedUser]);
 
     const clearNotification = useCallback(() => setNotification(null), []);
+// داخل الـ SocketContextProvider
+
+
+
+useEffect(() => {
+  const checkAuth = async () => {
+    try {
+      // هذا المسار يقرأ التوكن من الكوكي في الباك إند ويرجع بيانات اليوزر
+      const res = await api.get("/auth/me"); 
+      console.log("res from checkAuth:" +res);
+      setUser(res.data.user);
+      setUserId(res.data.user._id); // تعيين الـ ID للـ socket لاحقاً
+    } catch (err) {
+      setUser(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+  checkAuth();
+}, []);
+
+if (loading) return <Loading />; // لمنع الـ Home من التحميل بدون بيانات
 
     useEffect(() => {
-
-           // حاول جلب الـ ID من الكوكي أو من LocalStorage كخيار بديل أضمن
-    const id = getCookie("userId") || localStorage.getItem("userId") || "";
-    
-    if (!id) {
+    if (!userId) {
         console.log("No user ID found, socket will not connect.");
-        return;
-    }
-        const myIdFromCookie = getCookie("userId") || localStorage.getItem("userId") || "";
-       const token = getCookie("token") || localStorage.getItem("token") || "";
-        setUserId(myIdFromCookie);
-
-        if (!myIdFromCookie) return;
-
+        return;}
+       
         const newSocket = io("https://m2dd-chatserver.hf.space", {
             withCredentials: true,
             transports: ['websocket'],
-            auth: { userId: myIdFromCookie ||localStorage.getItem("userId"),token:token|| localStorage.getItem("token") },
+            auth: { userId: userId},
         });
 
         newSocket.on("connect", () => {
@@ -138,7 +152,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
         newSocket.on("private_reply", (data: MsgData) => {
             setMessages((prev) => [...prev, data]);
             const incomingSenderId = String(data.senderId).replace(/['"]+/g, '');
-            const currentUserId = String(myIdFromCookie).replace(/['"]+/g, '');
+            const currentUserId = String(userId).replace(/['"]+/g, '');
 
             if (incomingSenderId !== currentUserId) {
                 setOnlineUsers((currentList) => {

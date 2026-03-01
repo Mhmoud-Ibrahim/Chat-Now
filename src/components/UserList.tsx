@@ -16,7 +16,7 @@ export function UsersList() {
     setSelectedUser(id);
     // إذا كان المستخدم في صفحة الـ Users، ينقله تلقائياً للشات
     if (location.pathname === "/users") {
-      navigate("/chat");
+      navigate("/home");
     }
   };
 

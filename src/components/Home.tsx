@@ -30,6 +30,7 @@ export function Home() {
   const selectedUserData = onlineUsers.find(u => String(u.userId).replace(/['"]+/g, '') === targetId);
 
 useEffect(() => {
+  console.log(user)
   if (selectedUser && socket) {
     socket.emit("get_chat_history", { receiverId: selectedUser });
   }
