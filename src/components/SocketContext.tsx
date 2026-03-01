@@ -3,7 +3,7 @@ import { io, Socket } from "socket.io-client";
 import api from "./api";
 import Loading from "./Loading";
 
-
+// --- Interfaces ---
 export interface OnlineUser {
     userId: string;
     name: string;
@@ -17,12 +17,12 @@ export interface MsgData {
     _id?: string; 
     receiverId: string;
     timestamps: string;
-      createdAt?: string | Date; 
-    seen: boolean; // 👈 إضافة حقل الحالة (مقروءة أم لا)
+    createdAt?: string | Date; 
+    seen: boolean;
 }
 
 export interface UserData {
-    id: string;
+    _id: string; // تأكد من استخدامه كـ _id كما في MongoDB
     name: string;
     email: string;
     userImage?: string;
@@ -50,11 +50,13 @@ interface SocketContextValue {
     user: UserData | null;
     setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
     updateUserData: (newData: Partial<UserData>) => void;
+    loading: boolean;
 }
 
 export const SocketContext = createContext<SocketContextValue | null>(null);
 
 export function SocketProvider({ children }: { children: ReactNode }) {
+    // 1. All States defined at the top level
     const [userId, setUserId] = useState('');
     const [socket, setSocket] = useState<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
@@ -64,13 +66,11 @@ export function SocketProvider({ children }: { children: ReactNode }) {
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
     const [onlineUsers, setOnlineUsers] = useState<OnlineUser[]>([]);
     const [notification, setNotification] = useState<{ msg: string, senderName: string, senderId: string } | null>(null);
-  const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
 
-const updateUserData = useCallback((newData: Partial<UserData>) => {
-        setUser((prev) => {
-            if (!prev) return newData as UserData;
-            return { ...prev, ...newData };
-        });
+    // 2. Callbacks
+    const updateUserData = useCallback((newData: Partial<UserData>) => {
+        setUser((prev) => (prev ? { ...prev, ...newData } : (newData as UserData)));
     }, []);
 
     const deleteMsg = useCallback((msg: MsgData) => {
@@ -86,61 +86,58 @@ const updateUserData = useCallback((newData: Partial<UserData>) => {
     }, [socket, selectedUser]);
 
     const clearNotification = useCallback(() => setNotification(null), []);
-// داخل الـ SocketContextProvider
 
-
-
-useEffect(() => {
-  const checkAuth = async () => {
-    try {
-      // هذا المسار يقرأ التوكن من الكوكي في الباك إند ويرجع بيانات اليوزر
-      const res = await api.get("/auth/me"); 
-      console.log("res from checkAuth:" +res);
-      setUser(res.data.user);
-      setUserId(res.data.user._id); // تعيين الـ ID للـ socket لاحقاً
-    } catch (err) {
-      setUser(null);
-    } finally {
-      setLoading(false);
-    }
-  };
-  checkAuth();
+    // 3. Effect #1: Authentication Check (Runs once on mount)
+ useEffect(() => {
+    const checkAuth = async () => {
+        try {
+            const res = await api.get("/auth/me"); 
+            setUser(res.data.user);
+            setUserId(res.data.user._id);
+        } catch (err) {
+            setUser(null);
+            setUserId('');
+            // 👈 إذا كنت في صفحة محمية (مثل البروفايل) والتوكن تمسح، اذهب للوجن
+            if (window.location.pathname !== '/login' && window.location.pathname !== '/register') {
+                window.location.href = "/login";
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+    checkAuth();
 }, []);
 
-if (loading) return <Loading />; // لمنع الـ Home من التحميل بدون بيانات
 
+    // 4. Effect #2: Socket Management (Runs when userId changes)
     useEffect(() => {
-    if (!userId) {
-        console.log("No user ID found, socket will not connect.");
-        return;}
-       
+
+    if (!userId || userId === '') {
+        if (socket) {
+            socket.disconnect();
+            setSocket(null);
+        }
+        return;
+    }
         const newSocket = io("https://m2dd-chatserver.hf.space", {
             withCredentials: true,
             transports: ['websocket'],
-            auth: { userId: userId},
         });
 
-        newSocket.on("connect", () => {
-            setIsConnected(true);
-            newSocket.emit("get_profile");
-        });
+          newSocket.on("connect", () => {
+        setIsConnected(true);
+        console.log("Socket connected via Token Cookie ✅");
+    });
 
         newSocket.on("profile_data", (data) => {
             const userData = data.user || data;
             setUser(userData);
-            if (userData.name) setUsername(userData.name);
-        });
-
-        newSocket.on("profile_updated", (data) => {
-            const updated = data.user || data;
-            setUser(updated);
         });
 
         newSocket.on("get_history", (history: MsgData[]) => {
             setMessages(history);
         });
 
-    
         newSocket.on("private_reply", (data: MsgData) => {
             setMessages((prev) => [...prev, data]);
             const incomingSenderId = String(data.senderId).replace(/['"]+/g, '');
@@ -162,50 +159,41 @@ if (loading) return <Loading />; // لمنع الـ Home من التحميل ب�
         });
 
         newSocket.on("online_users", (users: OnlineUser[]) => setOnlineUsers(users));
-
         newSocket.on("message_deleted", ({ messageId }) => {
             setMessages((prev) => prev.filter(m => m._id !== messageId));
         });
-          newSocket.on("messages_read", ({ readerId }) => {
-  setMessages(prev => prev.map(m => {
-    // إذا كان الشخص الذي فتح المحادثة (readerId) هو مستلم الرسالة، اجعلها مقروءة
-    if (String(m.receiverId || m.receiverId).replace(/['"]+/g, '') === String(readerId)) {
-      return { ...m, seen: true };
-    }
-    return m;
-  }));
-});
+
+        newSocket.on("messages_read", ({ readerId }) => {
+            setMessages(prev => prev.map(m => {
+                if (String(m.receiverId).replace(/['"]+/g, '') === String(readerId)) {
+                    return { ...m, seen: true };
+                }
+                return m;
+            }));
+        });
 
         newSocket.on("messages_read_update", ({ readBy }) => {
-  setMessages((prev) =>
-    prev.map((msg) => {
-      // إذا كان مستلم هذه الرسالة هو الشخص الذي قرأها الآن (readBy)
-      const msgReceiver = String(msg.receiverId || msg.receiverId || "").replace(/['"]+/g, '');
-      const reader = String(readBy).replace(/['"]+/g, '');
-
-      if (msgReceiver === reader) {
-        return { ...msg, seen: true }; // تحديث الحالة في المصفوفة فوراً
-      }
-      return msg;
-    })
-  );
-});
-
-
+            setMessages((prev) =>
+                prev.map((msg) => {
+                    const msgReceiver = String(msg.receiverId || "").replace(/['"]+/g, '');
+                    const reader = String(readBy).replace(/['"]+/g, '');
+                    return msgReceiver === reader ? { ...msg, seen: true } : msg;
+                })
+            );
+        });
 
         setSocket(newSocket);
 
         return () => {
             newSocket.off("messages_read_update");
             newSocket.off("messages_read");
-            newSocket.off("profile_data");
-            newSocket.off("profile_updated");
-            newSocket.off("private_reply"); // أضف هذه
-            newSocket.off("get_history");   // أضف هذه
+            newSocket.off("private_reply");
+            newSocket.off("get_history");
             newSocket.close();
         };
     }, [userId]); 
 
+    // 5. Helper Methods
     const sendPrivateMsg = (msg: string, receiverId: string, imageUrl?: string) => {
         socket?.emit("private_msg", { 
             msg, 
@@ -218,18 +206,26 @@ if (loading) return <Loading />; // لمنع الـ Home من التحميل ب�
     const logout = async () => {
         try {
             await api.post('/auth/logout');
-            window.location.reload();
+            setUser(null);
+            setUserId('');
+            socket?.disconnect();
+            window.location.href = "/login";
         } catch (error) {
             console.error("Logout failed", error);
         }
     };
+
+    // 6. Conditional Rendering (Must be AFTER all Hooks)
+    if (loading) {
+        return <Loading />; 
+    }
 
     return (
         <SocketContext.Provider value={{
             socket, isConnected, messages, clearNotification, sendPrivateMsg, notification,
             userId, sendMsg: (msg) => socket?.emit("chatMsg", msg), setSelectedUser, updateUserData,
             selectedUser, onlineUsers, logout, userName, setUsername,
-            deleteMsg, deleteSenderMessages, user, setUser
+            deleteMsg, deleteSenderMessages, user, setUser,loading
         }}>
             {children}
         </SocketContext.Provider>

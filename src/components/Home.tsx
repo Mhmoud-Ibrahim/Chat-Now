@@ -9,7 +9,7 @@ export function Home() {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [isUploading, setIsUploading] = useState(false);
-
+const [imgLoading, setImgLoading] = useState(true); 
   if (!socketContext) return null;
 
   const {
@@ -54,6 +54,7 @@ useEffect(() => {
 
   useEffect(() => {
     scrollRef.current?.scrollIntoView({ behavior: "smooth" });
+    console.log(user)
   }, [messages]);
 
   const formik = useFormik({
@@ -68,7 +69,7 @@ useEffect(() => {
         if (selectedFile) {
           const formData = new FormData();
           formData.append("image", selectedFile);
-          const res = await api.post("/image-message", formData);
+          const res = await api.post("/imageMessage", formData);
           uploadedUrl = res.data.imageUrl;
         }
         sendPrivateMsg(values.msg, selectedUser, uploadedUrl);
@@ -111,14 +112,59 @@ useEffect(() => {
                   </div>
                 </div>
 
-                <div className="d-flex align-items-center gap-3">
+                {/* <div className="d-flex align-items-center gap-3">
                   <div className="rounded-circle overflow-hidden border shadow-sm d-none d-sm-block" style={{ width: "35px", height: "35px" }}>
                     {user?.fulluserImage ? <img src={user.fulluserImage} className="w-100 h-100 object-fit-cover" alt="me" /> : <div className="bg-secondary w-100 h-100"></div>}
                   </div>
                   <button onClick={() => window.confirm("مسح الشات؟") && deleteSenderMessages()} className="btn btn-outline-danger btn-sm rounded-pill border-0 shadow-sm">
                     <i className="fa-solid fa-trash-can"></i>
                   </button>
-                </div>
+                </div> */}
+   
+  <div className="d-flex align-items-center gap-3">
+    <div 
+      className="rounded-circle overflow-hidden border shadow-sm d-none d-sm-block bg-light position-relative" 
+      style={{ width: "35px", height: "35px" }}
+    >
+      {user?.fulluserImage ? (
+        <>
+          {/* 1. سبينر صغير يظهر أثناء التحميل */}
+          {imgLoading && (
+            <div className="position-absolute top-50 start-50 translate-middle">
+              <div 
+                className="spinner-border text-primary" 
+                style={{ width: '1rem', height: '1rem', borderWidth: '0.15em' }} 
+                role="status"
+              ></div>
+            </div>
+          )}
+
+          {/* 2. الصورة (تكون مخفية d-none حتى تكتمل) */}
+          <img 
+            src={user.fulluserImage} 
+            className={`w-100 h-100 object-fit-cover ${imgLoading ? 'd-none' : 'd-block'}`} 
+            alt="me" 
+            onLoad={() => setImgLoading(false)} 
+            onError={() => setImgLoading(false)} // لضمان اختفاء اللودر لو الرابط تعطل
+          />
+        </>
+      ) : (
+        // 3. حالة عدم وجود صورة أصلاً
+        <div className="bg-secondary w-100 h-100 d-flex align-items-center justify-content-center">
+          <i className="fa-solid fa-user text-white" style={{ fontSize: '12px' }}></i>
+        </div>
+      )}
+    </div>
+
+    <button 
+      onClick={() => window.confirm("مسح الشات؟") && deleteSenderMessages()} 
+      className="btn btn-outline-danger btn-sm rounded-pill border-0 shadow-sm"
+    >
+      <i className="fa-solid fa-trash-can"></i>
+    </button>
+  </div>
+);
+
               </div>
 
               <div className="flex-grow-1 overflow-auto p-4 custom-scrollbar bg-messages-area">
@@ -203,5 +249,9 @@ useEffect(() => {
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
       `}</style>
     </div>
-  );
+
+
+  )
+
+  
 }

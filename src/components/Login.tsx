@@ -20,7 +20,7 @@ export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const socketContext = useContext(SocketContext);
   if (!socketContext) return null;
-  const { updateUserData, setUser } = socketContext
+  const {  setUser } = socketContext
 
   // let navigate = useNavigate()
 
@@ -36,7 +36,7 @@ export default function Login() {
       if (data.message === 'success') {
         console.log(data);
         setUser(data.user);
-        // window.location.href = "/home"
+         window.location.href = "/home"
        
       }
     }

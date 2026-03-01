@@ -1,43 +1,23 @@
 import { Navigate, Outlet } from 'react-router-dom';
-import { useContext, useEffect, useState, type ReactNode } from 'react';
+import { useContext } from 'react';
 import { SocketContext } from './SocketContext';
-
+import Loading from './Loading'; // استورد نفس مكون التحميل الذي تستخدمه
 
 interface ProtectedRouteProps {
-  children?: ReactNode;
+  children?: React.ReactNode;
 }
 
 export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const socketContext = useContext(SocketContext);
-  const [isChecking, setIsChecking] = useState(true);
 
-  const { user, userId } = socketContext || {};
-
-
-  useEffect(() => {
- console.log(user)
- console.log(userId)
-    const timer = setTimeout(() => {
-      setIsChecking(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
-  }, [userId]);
-
- 
-  if (isChecking) {
-    return (
-      <div className="d-flex justify-content-center align-items-center vh-100">
-        <div className="spinner-border text-primary" role="status">
-          <span className="visually-hidden">Loading...</span>
-        </div>
-      </div>
-    );
+  if (!socketContext) return null;
+  const { user, userId, loading } = socketContext as any; 
+  if (loading) {
+    return <Loading />; 
   }
-
-  if (!userId) {
+  if (!userId || !user) {
+    console.log("Access Denied: No User Found");
     return <Navigate to="/login" replace />;
   }
-
   return children ? <>{children}</> : <Outlet />;
 }
