@@ -3,13 +3,6 @@ import { io, Socket } from "socket.io-client";
 import api from "./api";
 import Loading from "./Loading";
 
-// --- دالة مساعدة لجلب الكوكي ---
-const getCookie = (name: string) => {
-    const value = `; ${document.cookie}`;
-    const parts = value.split(`; ${name}=`);
-    if (parts.length === 2) return parts.pop()?.split(';').shift();
-    return null;
-};
 
 export interface OnlineUser {
     userId: string;
@@ -52,7 +45,6 @@ interface SocketContextValue {
     onlineUsers: OnlineUser[];
     logout: () => Promise<void>;
     userName: string | undefined;
-    getMyProfile: () => Promise<void>;
     setUsername: (name: string | undefined) => void;
     clearNotification: () => void;
     user: UserData | null;
@@ -237,7 +229,7 @@ if (loading) return <Loading />; // لمنع الـ Home من التحميل ب�
             socket, isConnected, messages, clearNotification, sendPrivateMsg, notification,
             userId, sendMsg: (msg) => socket?.emit("chatMsg", msg), setSelectedUser, updateUserData,
             selectedUser, onlineUsers, logout, userName, setUsername,
-            deleteMsg, deleteSenderMessages, getMyProfile: async () => { await api.get('/auth/getMe') }, user, setUser
+            deleteMsg, deleteSenderMessages, user, setUser
         }}>
             {children}
         </SocketContext.Provider>

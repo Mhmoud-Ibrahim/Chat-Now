@@ -11,11 +11,12 @@ export function ProtectedRoute({ children }: ProtectedRouteProps) {
   const socketContext = useContext(SocketContext);
   const [isChecking, setIsChecking] = useState(true);
 
+  const { user, userId } = socketContext || {};
 
-  const userId = socketContext?.userId ||localStorage.getItem('userId');
 
   useEffect(() => {
- 
+ console.log(user)
+ console.log(userId)
     const timer = setTimeout(() => {
       setIsChecking(false);
     }, 500);
