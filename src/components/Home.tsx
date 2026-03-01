@@ -3,6 +3,7 @@ import { SocketContext } from "./SocketContext";
 import { useFormik } from "formik";
 import { UsersList } from "./UserList";
 import api from "./api";
+import ChatLoader from "./ChatLoader";
 
 export function Home() {
   const socketContext = useContext(SocketContext);
@@ -21,7 +22,9 @@ const [imgLoading, setImgLoading] = useState(true);
     user,
     deleteMsg,
     deleteSenderMessages,
-    socket
+    socket,
+    loading,
+    setLoading
   } = socketContext;
 
   // تنظيف الـ IDs لضمان دقة المقارنة
@@ -30,7 +33,7 @@ const [imgLoading, setImgLoading] = useState(true);
   const selectedUserData = onlineUsers.find(u => String(u.userId).replace(/['"]+/g, '') === targetId);
 
 useEffect(() => {
-  console.log(user)
+ 
   if (selectedUser && socket) {
     socket.emit("get_chat_history", { receiverId: selectedUser });
   }
@@ -69,8 +72,10 @@ useEffect(() => {
         if (selectedFile) {
           const formData = new FormData();
           formData.append("image", selectedFile);
+          setLoading(true);
           const res = await api.post("/imageMessage", formData);
           uploadedUrl = res.data.imageUrl;
+          setLoading(false);
         }
         sendPrivateMsg(values.msg, selectedUser, uploadedUrl);
         formik.resetForm();
@@ -84,8 +89,8 @@ useEffect(() => {
   });
 
 
-  return (
-    <div className="container-fluid vh-100 p-0 overflow-hidden bg-light" style={{ marginTop: '60px' }}>
+  return (<>
+  {loading?<ChatLoader/>:<div className="container-fluid vh-100 p-0 overflow-hidden bg-light" style={{ marginTop: '60px' }}>
       <div className="row g-0 h-100">
         <div className="col-md-4 col-lg-3 border-end bg-white d-none d-md-block h-100 overflow-auto shadow-sm">
           <div className="p-3 bg-primary text-white d-flex align-items-center justify-content-between">
@@ -111,15 +116,6 @@ useEffect(() => {
                     <small className="text-success fw-medium">متصل الآن</small>
                   </div>
                 </div>
-
-                {/* <div className="d-flex align-items-center gap-3">
-                  <div className="rounded-circle overflow-hidden border shadow-sm d-none d-sm-block" style={{ width: "35px", height: "35px" }}>
-                    {user?.fulluserImage ? <img src={user.fulluserImage} className="w-100 h-100 object-fit-cover" alt="me" /> : <div className="bg-secondary w-100 h-100"></div>}
-                  </div>
-                  <button onClick={() => window.confirm("مسح الشات؟") && deleteSenderMessages()} className="btn btn-outline-danger btn-sm rounded-pill border-0 shadow-sm">
-                    <i className="fa-solid fa-trash-can"></i>
-                  </button>
-                </div> */}
    
   <div className="d-flex align-items-center gap-3">
     <div 
@@ -248,7 +244,10 @@ useEffect(() => {
         .custom-scrollbar::-webkit-scrollbar { width: 5px; }
         .custom-scrollbar::-webkit-scrollbar-thumb { background: #bbb; border-radius: 10px; }
       `}</style>
-    </div>
+    </div>}
+  
+  </>
+    
 
 
   )

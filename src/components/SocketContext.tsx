@@ -1,7 +1,7 @@
 import { createContext, useCallback, useEffect, useState, type ReactNode } from "react";
 import { io, Socket } from "socket.io-client";
 import api from "./api";
-import Loading from "./Loading";
+import ChatLoader from "./ChatLoader";
 
 // --- Interfaces ---
 export interface OnlineUser {
@@ -51,6 +51,7 @@ interface SocketContextValue {
     setUser: React.Dispatch<React.SetStateAction<UserData | null>>;
     updateUserData: (newData: Partial<UserData>) => void;
     loading: boolean;
+    setLoading: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
 export const SocketContext = createContext<SocketContextValue | null>(null);
@@ -217,7 +218,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
 
     // 6. Conditional Rendering (Must be AFTER all Hooks)
     if (loading) {
-        return <Loading />; 
+        return <ChatLoader/>; 
     }
 
     return (
@@ -225,7 +226,7 @@ export function SocketProvider({ children }: { children: ReactNode }) {
             socket, isConnected, messages, clearNotification, sendPrivateMsg, notification,
             userId, sendMsg: (msg) => socket?.emit("chatMsg", msg), setSelectedUser, updateUserData,
             selectedUser, onlineUsers, logout, userName, setUsername,
-            deleteMsg, deleteSenderMessages, user, setUser,loading
+            deleteMsg, deleteSenderMessages, user, setUser,loading,setLoading
         }}>
             {children}
         </SocketContext.Provider>
