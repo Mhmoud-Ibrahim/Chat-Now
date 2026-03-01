@@ -70,14 +70,15 @@
 import { useContext } from 'react';
 import { UsersList } from './UserList';
 import { SocketContext } from './SocketContext';
-import Loading from './Loading';
+import ChatLoader from './ChatLoader';
+
 
 function Users() {
     const context = useContext(SocketContext);
 
     // إذا كان الكونتكس لسه بيعمل CheckAuth من الكوكيز، نعرض شاشة التحميل
     if (context?.loading) {
-        return <Loading />;
+        return <ChatLoader />;
     }
 
     return (
